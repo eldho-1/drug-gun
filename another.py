@@ -59,7 +59,7 @@ def train_model(cocaine_file, heroin_file, methadone_file):
     model = ImbPipeline([
         ('scaler', StandardScaler()),
         ('smote', SMOTE(random_state=42)),  # Only applied on training data
-        ('classifier', SVC(kernel='rbf', C=10, gamma='scale', probability=True))  # Default best params
+        ('classifier', RandomForestClassifier(n_estimators=100))  # Default best params
     ])
     
     model.fit(X_train, y_train)
@@ -76,7 +76,7 @@ def train_model(cocaine_file, heroin_file, methadone_file):
     
     return model, le
 
-# 3. Predict new spectra
+# 3. Predict new spectra (FIXED)
 def predict_new_spectrum(new_csv_file, model, le):
     # Load new data (ensure it has 'wavelength' and 'absorbance' columns)
     new_df = pd.read_csv(new_csv_file)
@@ -85,16 +85,19 @@ def predict_new_spectrum(new_csv_file, model, le):
     processed_df = preprocess_spectrum(new_df)
     X_new = processed_df[['wavelength', 'absorbance_derivative']].values
     
-    # Predict probabilities for each class
+    # Predict probabilities for each class (across the entire spectrum)
     proba = model.predict_proba(X_new)
     
-    # Get the class with highest probability
-    predicted_class_idx = np.argmax(proba, axis=1)  # Returns array of predicted class indices (0, 1, or 2)
-    predicted_class = le.inverse_transform(predicted_class_idx)[0]  # Convert to drug name
+    # Aggregate predictions (mean probability across all wavelengths)
+    mean_proba = np.mean(proba, axis=0)
+    
+    # Get the class with highest mean probability
+    predicted_class_idx = np.argmax(mean_proba)
+    predicted_class = le.inverse_transform([predicted_class_idx])[0]
     
     print(f"\nPredicted Drug: {predicted_class}")
     print("Confidence Scores:")
-    for drug, score in zip(le.classes_, proba[0]):
+    for drug, score in zip(le.classes_, mean_proba):
         print(f"{drug}: {score:.2f}")
     
     return predicted_class
@@ -109,4 +112,4 @@ if __name__ == "__main__":
     )
     
     # Step 2: Predict a new spectrum
-    predict_new_spectrum("cocaine.csv", model, le)
+    predict_new_spectrum("methadone .csv", model, le)
