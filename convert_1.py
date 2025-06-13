@@ -121,8 +121,8 @@ def compress_ir_spectrum(input_file, output_file, compression_ratio=3):
 
 # Example usage
 if __name__ == "__main__":
-    input_csv = "cocaine.csv"  # Replace with your input file
-    output_csv = "compressed_cocaine.csv"  # Output file
+    input_csv = "sugar.csv"  # Replace with your input file
+    output_csv = "c_sugar.csv"  # Output file
     
     # Use full paths to avoid any directory issues
     # Example:
@@ -130,3 +130,4 @@ if __name__ == "__main__":
     # output_csv = r"C:\Users\eldho\OneDrive\Desktop\compressed_spectrum.csv"
     
     compress_ir_spectrum(input_csv, output_csv, compression_ratio=3)
+    #new code update
