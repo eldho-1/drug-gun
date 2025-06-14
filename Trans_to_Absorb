@@ -1,0 +1,50 @@
+import pandas as pd
+import numpy as np
+
+def convert_transmittance_to_absorbance(input_file, output_file):
+    """
+    Convert a CSV file with transmittance (%) to absorbance
+    
+    Parameters:
+        input_file (str): Path to input CSV file (wavenumber, transmittance, drug_type)
+        output_file (str): Path to save output CSV file (wavenumber, absorbance, drug_type)
+    """
+    try:
+        # Read the input file
+        df = pd.read_csv(input_file)
+        
+        # Validate columns
+        required_columns = {'wavenumber', 'transmittance', 'drug_type'}
+        if not required_columns.issubset(df.columns):
+            missing = required_columns - set(df.columns)
+            raise ValueError(f"Missing required columns: {missing}")
+        
+        # Convert transmittance (%) to absorbance
+        # A = -log10(T/100), where T is in percentage (0-100%)
+        df['absorbance'] = -np.log10(df['transmittance'])
+        
+        # Handle infinite values (from log10(0))
+        df['absorbance'].replace([np.inf, -np.inf], np.nan, inplace=True)
+        
+        # Drop the original transmittance column
+        df.drop(columns=['transmittance'], inplace=True)
+        
+        # Reorder columns
+        df = df[['wavenumber', 'absorbance', 'drug_type']]
+        
+        # Save to new CSV file
+        df.to_csv(output_file, index=False)
+        
+        print(f"Successfully converted {input_file} to {output_file}")
+        print(f"New absorbance range: {df['absorbance'].min():.4f} to {df['absorbance'].max():.4f}")
+        
+    except Exception as e:
+        print(f"Error during conversion: {str(e)}")
+        raise
+
+# Example usage:
+if __name__ == "__main__":
+    input_csv = "1_methadone.csv"  # Replace with your input file path
+    output_csv = "abs_methadone.csv"  # Output file path
+    
+    convert_transmittance_to_absorbance(input_csv, output_csv)
