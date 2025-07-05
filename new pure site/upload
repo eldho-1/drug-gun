@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Detectraa | Upload Drug Spectrum CSV</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/png" href="https://img.icons8.com/external-flat-icons-inmotus-design/67/000000/external-chemical-cyber-monday-flat-icons-inmotus-design.png"/>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-xl text-center">
+    
+    <h1 class="text-4xl font-extrabold text-blue-800 mb-2 tracking-tight">Detectraa</h1>
+    <p class="text-sm text-gray-500 mb-8 italic">AI-powered Drug Spectrum Analyzer</p>
+
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">📂 Upload Your IR Spectrum File</h2>
+    <p class="text-gray-600 mb-6">Please upload a CSV file containing your IR spectral data.</p>
+
+    <form action="/upload" method="post" enctype="multipart/form-data" class="flex flex-col gap-4">
+      <input type="file" name="file" accept=".csv" required class="p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
+      
+      <button type="submit"
+        class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
+        🚀 Analyze File
+      </button>
+    </form>
+
+    <footer class="mt-8 text-xs text-gray-400">
+      &copy; 2025 Detectraa | Precision AI for Drug Detection
+    </footer>
+  </div>
+
+</body>
+</html>
