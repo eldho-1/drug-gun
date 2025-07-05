@@ -2,18 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Upload CSV | Drug Detection Dashboard</title>
+  <title>Prediction Output</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">📂 Upload Your CSV File</h2>
-    <form action="/upload" method="post" enctype="multipart/form-data" class="flex flex-col gap-4">
-      <input type="file" name="file" accept=".csv" required class="p-2 border rounded">
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-        Upload and View Output
-      </button>
-    </form>
+  <div class="bg-white shadow-md rounded-xl p-6 max-w-2xl w-full">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">🔬 Prediction Result</h2>
+    <p><strong>Uploaded File:</strong> {{ filename }}</p>
+
+    {% if result.error %}
+      <p class="text-red-600">Error: {{ result.error }}</p>
+      <pre>{{ result.traceback }}</pre>
+    {% else %}
+      <p><strong>Is Drug:</strong> {{ result.is_drug }}</p>
+      <p><strong>Probability:</strong> {{ result.probability | round(3) }}</p>
+
+      {% if result.is_drug %}
+        <p><strong>Drug Type:</strong> {{ result.drug_type }}</p>
+        <p><strong>Confidence:</strong> {{ result.confidence | round(3) }}</p>
+        <p><strong>Matched Peaks:</strong> {{ result.matched_peaks }}</p>
+        <p><strong>Expected Peaks:</strong> {{ result.expected_peaks }}</p>
+
+        <h3 class="mt-4 font-semibold">Drug Information:</h3>
+        <ul class="list-disc list-inside">
+          {% for k, v in result.drug_info.items() %}
+            <li><strong>{{ k | capitalize }}:</strong> {{ v }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p><strong>Reason:</strong> {{ result.reason }}</p>
+      {% endif %}
+    {% endif %}
+    
+    <div class="mt-6">
+      <a href="/" class="text-blue-600 hover:underline">⬅️ Upload Another File</a>
+    </div>
   </div>
 </body>
 </html>
