@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mixture Result | Detectraa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-100 via-white to-indigo-200 min-h-screen flex items-center justify-center p-4">
+  <div class="backdrop-blur-xl bg-white/30 border border-white/20 shadow-2xl rounded-3xl p-8 w-full max-w-4xl text-gray-900">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-extrabold text-indigo-800 mb-1">Detectraa</h1>
+      <p class="text-sm text-gray-700 italic">Simulated Drug Mixture Analysis</p>
+    </div>
+
+    <div class="mb-6">
+      <p class="text-lg"><strong>Drug:</strong> {{ drug }}</p>
+      <p class="text-lg"><strong>Adulterant:</strong> {{ agent }}</p>
+      <p class="text-lg"><strong>Drug Weight:</strong> {{ dw }}%</p>
+      <p class="text-lg"><strong>Adulterant Weight:</strong> {{ aw }}%</p>
+      <p class="text-lg"><strong>Match Score:</strong> {{ match }}%</p>
+    </div>
+
+    <div class="mb-6 text-center">
+      <img src="data:image/png;base64,{{ plot_data }}" alt="Mixture Spectrum" class="mx-auto rounded-xl border shadow-lg max-w-full">
+    </div>
+
+    {% if peaks %}
+      <div class="mt-8">
+        <h2 class="text-2xl font-semibold text-indigo-800 mb-3">📍 Matched Peaks</h2>
+        <ul class="list-disc list-inside text-gray-800 text-base space-y-1">
+          {% for p in peaks %}
+            <li>
+              Expected: <span class="font-semibold text-green-700">{{ p[0] }}</span>,
+              Found: <span class="text-yellow-700">{{ p[1] | round(1) }}</span>,
+              Intensity: <span class="text-blue-700">{{ p[2] | round(3) }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="mt-8 text-center">
+      <a href="{{ url_for('download_report_mixture', drug=drug, agent=agent, dw=dw, aw=aw, match=match) }}">
+        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full shadow-lg transition">
+          ⬇️ Download PDF Report
+        </button>
+      </a>
+    </div>
+
+    <div class="mt-6 text-center">
+      <a href="/" class="text-indigo-700 hover:underline text-sm">⬅️ Back to Home</a>
+    </div>
+
+    <footer class="mt-10 text-center text-xs text-gray-500">
+      &copy; 2025 Detectraa. All rights reserved.
+    </footer>
+  </div>
+</body>
+</html>

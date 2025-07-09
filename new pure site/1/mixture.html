@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simulate Mixture | Detectraa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-green-100 via-white to-green-300 min-h-screen flex items-center justify-center">
+  <div class="backdrop-blur-xl bg-white/30 border border-white/20 shadow-2xl p-8 rounded-3xl max-w-lg w-full">
+    <h1 class="text-2xl font-bold text-green-900 mb-4 text-center">⚗️ Simulate a Mixture</h1>
+    <form method="POST" class="space-y-4 text-gray-800">
+      <div>
+        <label class="block mb-1 font-semibold">Select Drug</label>
+        <select name="drug" class="w-full border p-2 rounded-xl bg-white/60" required>
+          {% for drug in drugs %}
+            <option>{{ drug }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block mb-1 font-semibold">Drug Weight (%)</label>
+        <input type="number" name="drug_weight" class="w-full border p-2 rounded-xl bg-white/60" min="0" max="100" required>
+      </div>
+      <div>
+        <label class="block mb-1 font-semibold">Select Non-Drug</label>
+        <select name="agent" class="w-full border p-2 rounded-xl bg-white/60" required>
+          {% for agent in agents %}
+            <option>{{ agent }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block mb-1 font-semibold">Non-Drug Weight (%)</label>
+        <input type="number" name="agent_weight" class="w-full border p-2 rounded-xl bg-white/60" min="0" max="100" required>
+      </div>
+      {% if error %}
+        <p class="text-red-600 text-sm">{{ error }}</p>
+      {% endif %}
+      <button class="w-full bg-green-600/80 text-white px-4 py-2 rounded-xl hover:bg-green-700/80">Mix and Analyze</button>
+    </form>
+  </div>
+</body>
+</html>

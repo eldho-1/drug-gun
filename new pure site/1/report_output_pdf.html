@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Drug Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1, h2 { color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        img { width: 100%; margin-top: 20px; }
+        .info-table { width: 100%; margin-bottom: 20px; }
+        .info-table td { border: none; padding: 5px 0; text-align: left; }
+        .drug { font-weight: bold; color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <h1>Drug Detection Report</h1>
+    
+    <table class="info-table">
+        <tr>
+            <td><strong>Predicted Class:</strong></td>
+            <td class="drug">{{ result['predicted_class'] }}</td>
+        </tr>
+        <tr>
+            <td><strong>Is Drug:</strong></td>
+            <td>{{ "Yes" if result['is_drug'] else "No" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Probability:</strong></td>
+            <td>{{ "%.2f"|format(result['probability']) }}</td>
+        </tr>
+        {% if result['is_drug'] %}
+        <tr>
+            <td><strong>Drug Type:</strong></td>
+            <td>{{ result['drug_type'] }}</td>
+        </tr>
+        <tr>
+            <td><strong>Confidence:</strong></td>
+            <td>{{ "%.2f"|format(result['confidence']) }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    {% if result['matched_peaks'] %}
+        <h2>Matched Peaks</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Expected Peak (cm⁻¹)</th>
+                    <th>Detected Peak (cm⁻¹)</th>
+                    <th>Intensity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for peak in result['matched_peaks'] %}
+                <tr>
+                    <td>{{ peak[0] }}</td>
+                    <td>{{ "%.1f"|format(peak[1]) }}</td>
+                    <td>{{ "%.3f"|format(peak[2]) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Spectrum Analysis</h2>
+        <img src="data:image/png;base64,{{ result['plot_data'] }}">
+    {% endif %}
+
+    <div style="margin-top: 30px; font-size: 0.8em; text-align: center;">
+        Report generated on {{ now.strftime('%Y-%m-%d %H:%M:%S') }}
+    </div>
+</body>
+</html>
