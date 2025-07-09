@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Mixture Drug Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1, h2 { color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        img { width: 100%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Mixture Drug Report</h1>
+    <p><strong>Drug:</strong> {{ drug }}</p>
+    <p><strong>Adulterant:</strong> {{ agent }}</p>
+    <p><strong>Drug Weight:</strong> {{ dw }}%</p>
+    <p><strong>Agent Weight:</strong> {{ aw }}%</p>
+    <p><strong>Match:</strong> {{ match }}%</p>
+
+    {% if peaks %}
+        <h2>Matched Peaks</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Expected Peak (cm⁻¹)</th>
+                    <th>Detected Peak (cm⁻¹)</th>
+                    <th>Intensity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for peak in peaks %}
+                <tr>
+                    <td>{{ peak[0] }}</td>
+                    <td>{{ "%.1f"|format(peak[1]) }}</td>
+                    <td>{{ "%.2f"|format(peak[2]) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Spectrum Graph</h2>
+        <img src="data:image/png;base64,{{ plot_data }}">
+    {% endif %}
+</body>
+</html>
