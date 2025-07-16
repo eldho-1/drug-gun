@@ -112,8 +112,9 @@
                 </div>
 
                 <div class="spectrum-plot">
-                    {% if spectrum_plot %}
-                        <img src="{{ spectrum_plot }}" alt="IR Spectrum Plot" style="width: 100%; height: auto; border-radius: 8px;">
+                    {# Corrected: Access spectrum_plot from the result object #}
+                    {% if result.spectrum_plot %}
+                        <img src="{{ result.spectrum_plot }}" alt="IR Spectrum Plot" style="width: 100%; height: auto; border-radius: 8px;">
                     {% else %}
                         <div style="text-align: center; padding: 48px; color: var(--gray);">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 16px;">
