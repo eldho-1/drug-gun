@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash, jsonify, session # Added session
 from werkzeug.utils import secure_filename
 import joblib
 from datetime import datetime
@@ -15,6 +15,7 @@ import base64
 from fpdf import FPDF
 import tempfile
 import shutil
+from PIL import Image # Added for dynamic image sizing in PDF
 
 # Import your custom modules
 try:
@@ -176,8 +177,8 @@ def create_overlaid_plot(spectra_data, save_path=None):
         plt.close()
         return f"data:image/png;base64,{img_base64}"
 
-def generate_pdf_report(result_data, report_type="pure", filename=None):
-    """Generate PDF report for analysis results"""
+def generate_pdf_report(result_data, report_type="pure", filename=None, plot_image_path=None):
+    """Generate PDF report for analysis results with optional plot embedding"""
     if not filename:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"detectraa_report_{report_type}_{timestamp}.pdf"
@@ -232,6 +233,33 @@ def generate_pdf_report(result_data, report_type="pure", filename=None):
         peaks = result_data['detected_peaks'][:10]  # Limit to top 10
         for i, peak in enumerate(peaks, 1):
             pdf.cell(0, 8, f'{i}. {peak:.1f} cm⁻¹', 0, 1)
+
+    # Embed plot image if provided
+    # Ensure the path is relative to the Flask app's root or absolute
+    if plot_image_path and os.path.exists(plot_image_path.lstrip('/')): # Remove leading slash for os.path.exists
+        pdf.ln(10)
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'IR Spectrum Plot', 0, 1)
+        pdf.ln(2)
+        
+        try:
+            with Image.open(plot_image_path.lstrip('/')) as img:
+                width, height = img.size
+                aspect_ratio = height / width
+                pdf_width = 180 # Desired width in mm
+                pdf_height = pdf_width * aspect_ratio
+                
+                # Check if image fits on current page, if not, add new page
+                if pdf_height > (pdf.h - pdf.get_y() - 20): # 20mm buffer at bottom
+                    pdf.add_page()
+                    pdf.set_font('Arial', 'B', 14)
+                    pdf.cell(0, 10, 'IR Spectrum Plot (Continued)', 0, 1)
+                    pdf.ln(2)
+
+                pdf.image(plot_image_path.lstrip('/'), x=15, y=pdf.get_y(), w=pdf_width)
+        except Exception as e:
+            print(f"Error embedding image: {e}")
+            pdf.cell(0, 10, 'Error loading spectrum plot.', 0, 1)
     
     pdf.output(filepath)
     return filepath
@@ -308,6 +336,9 @@ def upload():
             result['spectrum_plot'] = f"/static/plots/{plot_filename}"
             result['sample_name'] = request.form.get('sample_name', 'Unknown Sample')
             result['notes'] = request.form.get('notes', '')
+            
+            # Store the result in session for PDF generation
+            session['last_pure_analysis_result'] = result
             
             # Clean up uploaded file
             os.remove(filepath)
@@ -414,6 +445,9 @@ def mixture():
                 'cutting_percentage': cutting_percentage,
                 'notes': notes
             }
+
+            # Store the results in session for PDF generation
+            session['last_mixture_analysis_results'] = results
             
             return render_template('mixture_output.html', 
                                  results=results, 
@@ -512,6 +546,9 @@ def multiple():
                     ] for drug in detected_drugs
                 }
             }
+
+            # Store the results in session for PDF generation
+            session['last_multi_analysis_results'] = results
             
             input_compounds = {
                 'drugs': selected_drugs,
@@ -533,16 +570,15 @@ def multiple():
 @app.route('/download_report')
 def download_report():
     """Download PDF report for pure compound analysis"""
-    # This would typically get result data from session or database
-    result_data = {
-        'is_drug': True,
-        'drug_type': 'cocaine',
-        'confidence': 0.85,
-        'detected_peaks': [1715.0, 1275.0, 1105.0]
-    }
+    result_data = session.get('last_pure_analysis_result')
+    if not result_data:
+        flash('No analysis data found to generate report.', 'error')
+        return redirect(url_for('home'))
     
     try:
-        filepath = generate_pdf_report(result_data, "pure")
+        # Get the plot path from the stored result data
+        plot_path = result_data.get('spectrum_plot')
+        filepath = generate_pdf_report(result_data, "pure", plot_image_path=plot_path)
         return send_file(filepath, as_attachment=True, 
                         download_name=os.path.basename(filepath))
     except Exception as e:
@@ -552,14 +588,15 @@ def download_report():
 @app.route('/download_mixture_report')
 def download_mixture_report():
     """Download PDF report for mixture analysis"""
-    result_data = {
-        'dominant_compound': 'cocaine',
-        'peak_matching_percentage': 85.0,
-        'detected_peaks': [1715.0, 1275.0]
-    }
+    result_data = session.get('last_mixture_analysis_results')
+    if not result_data:
+        flash('No mixture analysis data found to generate report.', 'error')
+        return redirect(url_for('home'))
     
     try:
-        filepath = generate_pdf_report(result_data, "mixture")
+        # Get the plot path from the stored result data
+        plot_path = result_data.get('mixture_spectrum_plot')
+        filepath = generate_pdf_report(result_data, "mixture", plot_image_path=plot_path)
         return send_file(filepath, as_attachment=True, 
                         download_name=os.path.basename(filepath))
     except Exception as e:
@@ -569,13 +606,15 @@ def download_mixture_report():
 @app.route('/download_multi_report')
 def download_multi_report():
     """Download PDF report for multiple compound analysis"""
-    result_data = {
-        'detected_drugs': ['cocaine', 'heroin'],
-        'detected_peaks': [1715.0, 1275.0, 1745.0]
-    }
+    result_data = session.get('last_multi_analysis_results')
+    if not result_data:
+        flash('No multi-compound analysis data found to generate report.', 'error')
+        return redirect(url_for('home'))
     
     try:
-        filepath = generate_pdf_report(result_data, "multiple")
+        # Get the plot path from the stored result data
+        plot_path = result_data.get('overlaid_spectrum_plot')
+        filepath = generate_pdf_report(result_data, "multiple", plot_image_path=plot_path)
         return send_file(filepath, as_attachment=True, 
                         download_name=os.path.basename(filepath))
     except Exception as e:
@@ -614,3 +653,4 @@ if __name__ == '__main__':
     
     # Run the application
     app.run(debug=True, host='0.0.0.0', port=5000)
+s
