@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Load your clean spectrum file (with 'wavenumber' and 'absorbance' columns)
-df = pd.read_csv("Pure Model/heroin.csv")
+
 
 def add_realistic_environmental_noise(df):
     df = df.copy()
@@ -39,20 +38,3 @@ def add_realistic_environmental_noise(df):
     return df
 
 
-final_df = add_realistic_environmental_noise(df)
-
-# Save the result
-final_df.to_csv("Noisy Data/heroin.csv", index=False)
-
-# Plot original vs. noisy data
-plt.figure(figsize=(12, 5))
-plt.plot(df['wavenumber'], df['absorbance'], label='Original Spectrum', color='blue')
-plt.plot(final_df['wavenumber'], final_df['absorbance'], label='Noisy Spectrum', color='red', alpha=0.7)
-plt.xlabel("Wavenumber (cm⁻¹)")
-plt.ylabel("Absorbance")
-plt.title("Heroin Spectrum with Simulated Environmental Noise")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.gca().invert_xaxis()  # Optional: IR spectra often display with decreasing wavenumber
-plt.show()
